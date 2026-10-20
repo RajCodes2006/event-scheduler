@@ -126,7 +126,13 @@ class EventController extends ChangeNotifier {
   }
 
   Future<void> deleteEvent(int id, {bool entireSeries = false}) async {
-    final selected = _events.where((event) => event.id == id).firstOrNull;
+    ScheduleEvent? selected;
+    for (final event in _events) {
+      if (event.id == id) {
+        selected = event;
+        break;
+      }
+    }
     if (selected == null) return;
 
     if (entireSeries && selected.recurrenceSeriesId != null) {
