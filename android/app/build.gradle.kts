@@ -29,7 +29,8 @@ android {
     defaultConfig {
         multiDexEnabled = true
         applicationId = "com.rajcodes.daymark"
-        minSdk = flutter.minSdkVersion
+        // flutter_local_notifications 21+ requires Android 7.0 (API 24) or newer.
+        minSdk = maxOf(flutter.minSdkVersion, 24)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
