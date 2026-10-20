@@ -10,11 +10,12 @@ class EventController extends ChangeNotifier {
   List<ScheduleEvent> _events = const [];
   Map<DateTime, List<ScheduleEvent>> _eventsByDay = const {};
   bool _isLoading = true;
+  bool _isDarkMode = false;
   String? _errorMessage;
 
-  // The list is replaced, never mutated, so callers can safely reuse it.
   List<ScheduleEvent> get events => _events;
   bool get isLoading => _isLoading;
+  bool get isDarkMode => _isDarkMode;
   String? get errorMessage => _errorMessage;
 
   Future<void> loadEvents() async {
@@ -24,7 +25,9 @@ class EventController extends ChangeNotifier {
     notifyListeners();
 
     try {
+      final darkMode = await _database.getDarkModeEnabled();
       _replaceEvents(await _database.getAllEvents());
+      _isDarkMode = darkMode;
       loadedSuccessfully = true;
     } catch (error) {
       _errorMessage = 'Could not load events. Please restart the app.';
@@ -34,9 +37,21 @@ class EventController extends ChangeNotifier {
       notifyListeners();
     }
 
-    // Reconcile reminders after the main screen has finished loading.
     if (loadedSuccessfully) {
       await NotificationService.instance.syncReminders(_events);
+    }
+  }
+
+  Future<void> toggleDarkMode() async {
+    final previous = _isDarkMode;
+    _isDarkMode = !_isDarkMode;
+    notifyListeners();
+    try {
+      await _database.setDarkModeEnabled(_isDarkMode);
+    } catch (error) {
+      _isDarkMode = previous;
+      notifyListeners();
+      debugPrint('Could not save Daymark appearance setting: $error');
     }
   }
 
@@ -45,9 +60,6 @@ class EventController extends ChangeNotifier {
       ..sort((a, b) => a.startAt.compareTo(b.startAt));
     _events = List<ScheduleEvent>.unmodifiable(sorted);
 
-    // TableCalendar asks for event data for each visible date. Index once
-    // after data changes instead of filtering and sorting the entire list
-    // for every calendar cell.
     final grouped = <DateTime, List<ScheduleEvent>>{};
     for (final event in sorted) {
       final day = DateTime(
@@ -66,7 +78,6 @@ class EventController extends ChangeNotifier {
 
   List<ScheduleEvent> get upcomingEvents {
     final now = DateTime.now();
-    // _events is already sorted by start time, so no second sort is needed.
     return _events
         .where((event) => event.endAt.isAfter(now))
         .toList(growable: false);
@@ -78,44 +89,65 @@ class EventController extends ChangeNotifier {
   }
 
   Future<void> saveEvent(ScheduleEvent event) async {
-    final ScheduleEvent savedEvent;
+    if (event.id == null && event.recurrenceFrequency != 'none') {
+      final until = event.recurrenceUntil;
+      if (until == null || until.isBefore(event.startAt)) {
+        throw ArgumentError('Choose a repeat-until date on or after the event date.');
+      }
+      final seriesId = DateTime.now().microsecondsSinceEpoch.toString();
+      final occurrences = event.generateOccurrences(
+        seriesId: seriesId,
+        until: until,
+      );
+      final inserted = await _database.insertEvents(occurrences);
+      _replaceEvents([..._events, ...inserted]);
+      _errorMessage = null;
+      notifyListeners();
+      for (final occurrence in inserted) {
+        await NotificationService.instance.scheduleReminder(occurrence);
+      }
+      return;
+    }
 
+    final ScheduleEvent savedEvent;
     if (event.id == null) {
       final id = await _database.insertEvent(event);
-      savedEvent = ScheduleEvent(
-        id: id,
-        title: event.title,
-        description: event.description,
-        location: event.location,
-        category: event.category,
-        startAt: event.startAt,
-        endAt: event.endAt,
-        reminderMinutesBefore: event.reminderMinutesBefore,
-      );
+      savedEvent = event.copyWith(id: id);
       _replaceEvents([..._events, savedEvent]);
     } else {
       await _database.updateEvent(event);
       savedEvent = event;
-      final updated = _events
-          .where((existing) => existing.id != event.id)
-          .followedBy([savedEvent]);
-      _replaceEvents(updated);
+      _replaceEvents(_events.where((existing) => existing.id != event.id).followedBy([savedEvent]));
     }
 
-    // Don't set isLoading during normal edits. Keeping the screen in place
-    // avoids a spinner flash and a second whole-app rebuild after every save.
     _errorMessage = null;
     notifyListeners();
-
     await NotificationService.instance.scheduleReminder(savedEvent);
   }
 
-  Future<void> deleteEvent(int id) async {
+  Future<void> deleteEvent(int id, {bool entireSeries = false}) async {
+    final selected = _events.where((event) => event.id == id).firstOrNull;
+    if (selected == null) return;
+
+    if (entireSeries && selected.recurrenceSeriesId != null) {
+      final series = _events
+          .where((event) => event.recurrenceSeriesId == selected.recurrenceSeriesId)
+          .toList(growable: false);
+      await _database.deleteSeries(selected.recurrenceSeriesId!);
+      final ids = series.map((event) => event.id).whereType<int>().toSet();
+      _replaceEvents(_events.where((event) => !ids.contains(event.id)));
+      _errorMessage = null;
+      notifyListeners();
+      for (final eventId in ids) {
+        await NotificationService.instance.cancelReminder(eventId);
+      }
+      return;
+    }
+
     await _database.deleteEvent(id);
     _replaceEvents(_events.where((event) => event.id != id));
     _errorMessage = null;
     notifyListeners();
-
     await NotificationService.instance.cancelReminder(id);
   }
 }
