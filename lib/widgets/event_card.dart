@@ -5,7 +5,7 @@ import '../models/schedule_event.dart';
 
 typedef DeleteEventCallback = Future<void> Function(
   ScheduleEvent event, {
-  bool entireSeries,
+  bool? entireSeries,
 });
 
 class EventCard extends StatelessWidget {
