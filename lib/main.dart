@@ -1,11 +1,21 @@
+import 'dart:io' show Platform;
+
 import 'package:flutter/material.dart';
+import 'package:sqflite/sqflite.dart' as sqflite;
+import 'package:sqflite_common_ffi/sqflite_ffi.dart' as sqflite_ffi;
 import 'package:provider/provider.dart';
 
 import 'screens/app_shell.dart';
 import 'state/event_controller.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // On Windows, use the SQLite FFI implementation instead of the mobile plugin.
+  if (Platform.isWindows) {
+    sqflite_ffi.sqfliteFfiInit();
+    sqflite.databaseFactory = sqflite_ffi.databaseFactoryFfi;
+  }
   runApp(
     ChangeNotifierProvider(
       create: (_) => EventController()..loadEvents(),
