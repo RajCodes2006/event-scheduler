@@ -1,7 +1,7 @@
 name: event_scheduler
 description: A clean personal event scheduler built with Flutter and SQLite.
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.0.4+4
 
 environment:
   sdk: '>=3.4.0 <4.0.0'
