@@ -48,9 +48,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   ),
                 ),
                 const SizedBox(height: 5),
-                const Text(
+                Text(
                   'See what is planned and what is free.',
-                  style: TextStyle(color: Color(0xFF777B8F), fontSize: 14),
+                  style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 14),
                 ),
                 const SizedBox(height: 22),
                 Container(
