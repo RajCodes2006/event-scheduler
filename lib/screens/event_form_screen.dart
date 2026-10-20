@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../models/schedule_event.dart';
+import '../services/notification_service.dart';
 import '../state/event_controller.dart';
 
 class EventFormScreen extends StatefulWidget {
@@ -22,6 +23,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
   late DateTime _startAt;
   late DateTime _endAt;
   late String _category;
+  late int _reminderMinutesBefore;
   bool _saving = false;
 
   static const List<String> _categories = ['Personal', 'Work', 'Study', 'Health', 'Social', 'Other'];
@@ -37,6 +39,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
     _descriptionController = TextEditingController(text: widget.event?.description ?? '');
     _locationController = TextEditingController(text: widget.event?.location ?? '');
     _category = widget.event?.category ?? 'Personal';
+    _reminderMinutesBefore = widget.event?.reminderMinutesBefore ?? 15;
     if (!_categories.contains(_category)) _category = 'Other';
   }
 
@@ -97,6 +100,15 @@ class _EventFormScreenState extends State<EventFormScreen> {
     }
 
     setState(() => _saving = true);
+
+    var notificationPermissionGranted = true;
+    if (NotificationService.supportsEventReminders &&
+        _reminderMinutesBefore > 0) {
+      notificationPermissionGranted =
+          await NotificationService.instance.requestPermission();
+    }
+    if (!mounted) return;
+
     final event = ScheduleEvent(
       id: widget.event?.id,
       title: _titleController.text.trim(),
@@ -105,11 +117,26 @@ class _EventFormScreenState extends State<EventFormScreen> {
       category: _category,
       startAt: _startAt,
       endAt: _endAt,
+      reminderMinutesBefore: _reminderMinutesBefore,
     );
 
     try {
+      final messenger = ScaffoldMessenger.of(context);
       await context.read<EventController>().saveEvent(event);
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        Navigator.of(context).pop();
+        if (NotificationService.supportsEventReminders &&
+            _reminderMinutesBefore > 0 &&
+            !notificationPermissionGranted) {
+          messenger.showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Event saved. Allow notifications in Android Settings to receive reminders.',
+              ),
+            ),
+          );
+        }
+      }
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -190,6 +217,36 @@ class _EventFormScreenState extends State<EventFormScreen> {
                   Expanded(child: _TimeSelector(label: 'Ends', time: _endAt, onPressed: _chooseEndTime)),
                 ],
               ),
+              const SizedBox(height: 12),
+              if (NotificationService.supportsEventReminders) ...[
+                DropdownButtonFormField<int>(
+                  value: _reminderMinutesBefore,
+                  decoration: const InputDecoration(
+                    labelText: 'Reminder',
+                    prefixIcon: Icon(Icons.notifications_active_outlined),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 0, child: Text('No reminder')),
+                    DropdownMenuItem(value: 5, child: Text('5 minutes before')),
+                    DropdownMenuItem(value: 10, child: Text('10 minutes before')),
+                    DropdownMenuItem(value: 15, child: Text('15 minutes before')),
+                    DropdownMenuItem(value: 30, child: Text('30 minutes before')),
+                    DropdownMenuItem(value: 60, child: Text('1 hour before')),
+                  ],
+                  onChanged: (value) {
+                    setState(() => _reminderMinutesBefore = value ?? 15);
+                  },
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Daymark will remind you even when the app is closed, if notifications are allowed.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFF777B8F),
+                    height: 1.4,
+                  ),
+                ),
+              ],
               const SizedBox(height: 12),
               const Text(
                 'Events that end after midnight are supported. The selected date is the start date.',
