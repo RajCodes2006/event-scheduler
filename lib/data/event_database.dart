@@ -1,4 +1,7 @@
+import 'dart:io' show Directory, Platform;
+
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 
 import '../models/schedule_event.dart';
@@ -12,8 +15,18 @@ class EventDatabase {
   Future<Database> get database async {
     if (_database != null) return _database!;
 
-    final dbPath = await getDatabasesPath();
-    final path = p.join(dbPath, 'daymark_events.db');
+    final String path;
+    if (Platform.isWindows) {
+      // Windows needs a stable writable app-data folder; getDatabasesPath()
+      // is not a suitable default for the FFI implementation on desktop.
+      final supportDirectory = await getApplicationSupportDirectory();
+      final appDirectory = Directory(p.join(supportDirectory.path, 'Daymark'));
+      await appDirectory.create(recursive: true);
+      path = p.join(appDirectory.path, 'daymark_events.db');
+    } else {
+      final dbPath = await getDatabasesPath();
+      path = p.join(dbPath, 'daymark_events.db');
+    }
 
     _database = await openDatabase(
       path,
