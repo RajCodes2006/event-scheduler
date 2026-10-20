@@ -24,9 +24,13 @@ class _EventFormScreenState extends State<EventFormScreen> {
   late DateTime _endAt;
   late String _category;
   late int _reminderMinutesBefore;
+  late String _recurrenceFrequency;
+  DateTime? _recurrenceUntil;
   bool _saving = false;
 
-  static const List<String> _categories = ['Personal', 'Work', 'Study', 'Health', 'Social', 'Other'];
+  static const List<String> _categories = [
+    'Personal', 'Work', 'Study', 'Health', 'Social', 'Other',
+  ];
 
   @override
   void initState() {
@@ -40,6 +44,8 @@ class _EventFormScreenState extends State<EventFormScreen> {
     _locationController = TextEditingController(text: widget.event?.location ?? '');
     _category = widget.event?.category ?? 'Personal';
     _reminderMinutesBefore = widget.event?.reminderMinutesBefore ?? 15;
+    _recurrenceFrequency = widget.event?.recurrenceFrequency ?? 'none';
+    _recurrenceUntil = widget.event?.recurrenceUntil;
     if (!_categories.contains(_category)) _category = 'Other';
   }
 
@@ -62,6 +68,9 @@ class _EventFormScreenState extends State<EventFormScreen> {
 
     setState(() {
       _startAt = DateTime(picked.year, picked.month, picked.day, _startAt.hour, _startAt.minute);
+      if (_recurrenceUntil != null && _recurrenceUntil!.isBefore(_startAt)) {
+        _recurrenceUntil = DateTime(_startAt.year, _startAt.month, _startAt.day + 30);
+      }
       _endAt = DateTime(picked.year, picked.month, picked.day, _endAt.hour, _endAt.minute);
       if (!_endAt.isAfter(_startAt)) _endAt = _startAt.add(const Duration(hours: 1));
     });
@@ -70,7 +79,6 @@ class _EventFormScreenState extends State<EventFormScreen> {
   Future<void> _chooseStartTime() async {
     final picked = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(_startAt));
     if (picked == null) return;
-
     setState(() {
       _startAt = DateTime(_startAt.year, _startAt.month, _startAt.day, picked.hour, picked.minute);
       if (!_endAt.isAfter(_startAt)) _endAt = _startAt.add(const Duration(hours: 1));
@@ -80,13 +88,37 @@ class _EventFormScreenState extends State<EventFormScreen> {
   Future<void> _chooseEndTime() async {
     final picked = await showTimePicker(context: context, initialTime: TimeOfDay.fromDateTime(_endAt));
     if (picked == null) return;
-
     setState(() {
       var candidate = DateTime(_startAt.year, _startAt.month, _startAt.day, picked.hour, picked.minute);
-      if (!candidate.isAfter(_startAt)) {
-        candidate = candidate.add(const Duration(days: 1));
-      }
+      if (!candidate.isAfter(_startAt)) candidate = candidate.add(const Duration(days: 1));
       _endAt = candidate;
+    });
+  }
+
+  Future<void> _chooseRepeatUntil() async {
+    final startDay = DateTime(_startAt.year, _startAt.month, _startAt.day);
+    final initial = _recurrenceUntil ?? startDay.add(const Duration(days: 30));
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial.isBefore(startDay) ? startDay : initial,
+      firstDate: startDay,
+      lastDate: DateTime(2050, 12, 31),
+      helpText: 'LAST REPEAT DATE',
+    );
+    if (picked != null) setState(() => _recurrenceUntil = picked);
+  }
+
+  void _setRepeatFrequency(String value) {
+    setState(() {
+      _recurrenceFrequency = value;
+      if (value != 'none') {
+        final startDay = DateTime(_startAt.year, _startAt.month, _startAt.day);
+        if (_recurrenceUntil == null || _recurrenceUntil!.isBefore(startDay)) {
+          _recurrenceUntil = startDay.add(const Duration(days: 30));
+        }
+      } else {
+        _recurrenceUntil = null;
+      }
     });
   }
 
@@ -98,19 +130,23 @@ class _EventFormScreenState extends State<EventFormScreen> {
       );
       return;
     }
+    if (!isValidRepeatSettings()) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Choose a repeat-until date on or after the event date.')),
+      );
+      return;
+    }
 
     setState(() => _saving = true);
-
     var notificationPermissionGranted = true;
-    if (NotificationService.supportsEventReminders &&
-        _reminderMinutesBefore > 0) {
-      notificationPermissionGranted =
-          await NotificationService.instance.requestPermission();
+    if (NotificationService.supportsEventReminders && _reminderMinutesBefore > 0) {
+      notificationPermissionGranted = await NotificationService.instance.requestPermission();
     }
     if (!mounted) return;
 
+    final existing = widget.event;
     final event = ScheduleEvent(
-      id: widget.event?.id,
+      id: existing?.id,
       title: _titleController.text.trim(),
       description: _descriptionController.text.trim(),
       location: _locationController.text.trim(),
@@ -118,6 +154,10 @@ class _EventFormScreenState extends State<EventFormScreen> {
       startAt: _startAt,
       endAt: _endAt,
       reminderMinutesBefore: _reminderMinutesBefore,
+      recurrenceSeriesId: existing?.recurrenceSeriesId,
+      recurrenceFrequency: existing?.recurrenceFrequency ?? _recurrenceFrequency,
+      recurrenceUntil: existing?.recurrenceUntil ??
+          (_recurrenceFrequency == 'none' ? null : _recurrenceUntil),
     );
 
     try {
@@ -130,9 +170,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
             !notificationPermissionGranted) {
           messenger.showSnackBar(
             const SnackBar(
-              content: Text(
-                'Event saved. Allow notifications in Android Settings to receive reminders.',
-              ),
+              content: Text('Event saved. Allow notifications in Android Settings to receive reminders.'),
             ),
           );
         }
@@ -140,26 +178,38 @@ class _EventFormScreenState extends State<EventFormScreen> {
     } catch (error) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Could not save this event. Please try again.')),
+          SnackBar(content: Text('Could not save this event: $error')),
         );
         setState(() => _saving = false);
       }
     }
   }
 
+  bool isValidRepeatSettings() {
+    if (widget.event != null || _recurrenceFrequency == 'none') return true;
+    final until = _recurrenceUntil;
+    if (until == null) return false;
+    final startDay = DateTime(_startAt.year, _startAt.month, _startAt.day);
+    return !until.isBefore(startDay);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final isEditing = widget.event != null;
+    final isEditingSeriesOccurrence = widget.event?.isRecurring ?? false;
+    final isRepeating = _recurrenceFrequency != 'none';
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Edit event' : 'New event', style: const TextStyle(fontWeight: FontWeight.w800)),
+        title: Text(isEditing ? 'Edit event' : 'New event',
+            style: const TextStyle(fontWeight: FontWeight.w800)),
         actions: [
           TextButton(
             onPressed: _saving ? null : _save,
             child: _saving
                 ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Text('Save', style: TextStyle(fontWeight: FontWeight.w700)),
+                : const Text('Save', style: TextStyle(fontWeight: FontWeight.w800)),
           ),
           const SizedBox(width: 8),
         ],
@@ -170,7 +220,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
           child: ListView(
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 28),
             children: [
-              const Text('EVENT DETAILS', style: TextStyle(fontSize: 11, letterSpacing: 1.7, fontWeight: FontWeight.w800, color: Color(0xFF5B5CE2))),
+              _FormSectionLabel(label: 'EVENT DETAILS'),
               const SizedBox(height: 13),
               TextFormField(
                 controller: _titleController,
@@ -201,13 +251,17 @@ class _EventFormScreenState extends State<EventFormScreen> {
                 decoration: const InputDecoration(labelText: 'Notes (optional)', alignLabelWithHint: true, hintText: 'Anything you need to remember…'),
               ),
               const SizedBox(height: 28),
-              const Text('DATE & TIME', style: TextStyle(fontSize: 11, letterSpacing: 1.7, fontWeight: FontWeight.w800, color: Color(0xFF5B5CE2))),
+              _FormSectionLabel(label: 'DATE & TIME'),
               const SizedBox(height: 13),
               OutlinedButton.icon(
                 onPressed: _chooseDate,
                 icon: const Icon(Icons.calendar_month_rounded),
                 label: Text(DateFormat('EEEE, d MMMM yyyy').format(_startAt)),
-                style: OutlinedButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 17), alignment: Alignment.centerLeft),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 17),
+                  alignment: Alignment.centerLeft,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
               ),
               const SizedBox(height: 12),
               Row(
@@ -217,12 +271,71 @@ class _EventFormScreenState extends State<EventFormScreen> {
                   Expanded(child: _TimeSelector(label: 'Ends', time: _endAt, onPressed: _chooseEndTime)),
                 ],
               ),
-              const SizedBox(height: 12),
+              if (!isEditing) ...[
+                const SizedBox(height: 14),
+                DropdownButtonFormField<String>(
+                  value: _recurrenceFrequency,
+                  decoration: const InputDecoration(
+                    labelText: 'Repeat',
+                    prefixIcon: Icon(Icons.repeat_rounded),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'none', child: Text('Does not repeat')),
+                    DropdownMenuItem(value: 'daily', child: Text('Every day')),
+                    DropdownMenuItem(value: 'weekly', child: Text('Every week')),
+                    DropdownMenuItem(value: 'monthly', child: Text('Every month')),
+                  ],
+                  onChanged: (value) => _setRepeatFrequency(value ?? 'none'),
+                ),
+                if (isRepeating) ...[
+                  const SizedBox(height: 12),
+                  OutlinedButton.icon(
+                    onPressed: _chooseRepeatUntil,
+                    icon: const Icon(Icons.event_repeat_rounded),
+                    label: Text('Repeat until ${DateFormat('d MMM yyyy').format(_recurrenceUntil ?? _startAt.add(const Duration(days: 30)))}'),
+                    style: OutlinedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 17),
+                      alignment: Alignment.centerLeft,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    ),
+                  ),
+                  const SizedBox(height: 7),
+                  Text(
+                    'Occurrences are saved individually through the selected end date. You can remove one occurrence or the whole series later.',
+                    style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 12, height: 1.4),
+                  ),
+                ],
+              ] else if (isEditingSeriesOccurrence) ...[
+                const SizedBox(height: 14),
+                Container(
+                  padding: const EdgeInsets.all(13),
+                  decoration: BoxDecoration(
+                    color: scheme.secondaryContainer.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.repeat_rounded, color: scheme.primary),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'This is one occurrence in a ${widget.event!.recurrenceFrequency} series. Changes apply to this occurrence only.',
+                          style: TextStyle(color: scheme.onSurface, fontSize: 12, height: 1.4),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              const SizedBox(height: 26),
               if (NotificationService.supportsEventReminders) ...[
+                _FormSectionLabel(label: 'REMINDER'),
+                const SizedBox(height: 13),
                 DropdownButtonFormField<int>(
                   value: _reminderMinutesBefore,
                   decoration: const InputDecoration(
-                    labelText: 'Reminder',
+                    labelText: 'Notify me',
                     prefixIcon: Icon(Icons.notifications_active_outlined),
                   ),
                   items: const [
@@ -233,35 +346,46 @@ class _EventFormScreenState extends State<EventFormScreen> {
                     DropdownMenuItem(value: 30, child: Text('30 minutes before')),
                     DropdownMenuItem(value: 60, child: Text('1 hour before')),
                   ],
-                  onChanged: (value) {
-                    setState(() => _reminderMinutesBefore = value ?? 15);
-                  },
+                  onChanged: (value) => setState(() => _reminderMinutesBefore = value ?? 15),
                 ),
-                const SizedBox(height: 12),
-                const Text(
-                  'Daymark will remind you even when the app is closed, if notifications are allowed.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF777B8F),
-                    height: 1.4,
-                  ),
+                const SizedBox(height: 8),
+                Text(
+                  'Reminders can arrive while Daymark is closed when notifications are allowed.',
+                  style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant, height: 1.4),
                 ),
               ],
-              const SizedBox(height: 12),
-              const Text(
-                'Events that end after midnight are supported. The selected date is the start date.',
-                style: TextStyle(fontSize: 12, color: Color(0xFF777B8F), height: 1.4),
-              ),
-              const SizedBox(height: 24),
+              const SizedBox(height: 26),
               FilledButton.icon(
                 onPressed: _saving ? null : _save,
                 icon: const Icon(Icons.check_rounded),
-                label: Text(_saving ? 'Saving…' : isEditing ? 'Save changes' : 'Create event'),
-                style: FilledButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
+                label: Text(_saving ? 'Saving…' : isEditing ? 'Save changes' : isRepeating ? 'Create series' : 'Create event'),
+                style: FilledButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 17),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _FormSectionLabel extends StatelessWidget {
+  const _FormSectionLabel({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      label,
+      style: TextStyle(
+        fontSize: 10,
+        letterSpacing: 1.7,
+        fontWeight: FontWeight.w900,
+        color: Theme.of(context).colorScheme.primary,
       ),
     );
   }
@@ -276,19 +400,21 @@ class _TimeSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return OutlinedButton(
       onPressed: onPressed,
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         alignment: Alignment.centerLeft,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 12, color: Color(0xFF777B8F))),
+          Text(label, style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
           const SizedBox(height: 5),
-          Text(DateFormat('h:mm a').format(time), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          Text(DateFormat('h:mm a').format(time),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
         ],
       ),
     );
