@@ -156,13 +156,35 @@ class NotificationService {
           .map((event) => event.id!)
           .toSet();
       final pending = await _plugin.pendingNotificationRequests();
+      final pendingIds = pending.map((reminder) => reminder.id).toSet();
+
       for (final reminder in pending) {
         if (!savedIds.contains(reminder.id)) {
           await _plugin.cancel(id: reminder.id);
         }
       }
 
+      final now = DateTime.now();
       for (final event in events) {
+        if (event.id == null) continue;
+
+        if (event.reminderMinutesBefore <= 0 ||
+            !event.startAt.isAfter(now)) {
+          await _plugin.cancel(id: event.id!);
+          continue;
+        }
+
+        final reminderAt = event.startAt.subtract(
+          Duration(minutes: event.reminderMinutesBefore),
+        );
+
+        // If the reminder time is already due, leave an existing OS alarm
+        // alone. If it already fired, don't recreate it on every app launch.
+        if (!reminderAt.isAfter(now)) {
+          if (pendingIds.contains(event.id)) continue;
+          continue;
+        }
+
         await scheduleReminder(event);
       }
     } catch (error) {
