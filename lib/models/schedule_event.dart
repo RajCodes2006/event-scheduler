@@ -7,6 +7,7 @@ class ScheduleEvent {
     required this.category,
     required this.startAt,
     required this.endAt,
+    this.reminderMinutesBefore = 15,
   });
 
   final int? id;
@@ -17,6 +18,9 @@ class ScheduleEvent {
   final DateTime startAt;
   final DateTime endAt;
 
+  /// Minutes before the event to notify. Zero disables the reminder.
+  final int reminderMinutesBefore;
+
   Map<String, Object?> toMap() {
     return {
       'id': id,
@@ -26,6 +30,7 @@ class ScheduleEvent {
       'category': category,
       'start_at': startAt.toIso8601String(),
       'end_at': endAt.toIso8601String(),
+      'reminder_minutes_before': reminderMinutesBefore,
     };
   }
 
@@ -38,6 +43,7 @@ class ScheduleEvent {
       category: (map['category'] as String?) ?? 'Personal',
       startAt: DateTime.parse(map['start_at'] as String),
       endAt: DateTime.parse(map['end_at'] as String),
+      reminderMinutesBefore: (map['reminder_minutes_before'] as int?) ?? 15,
     );
   }
 }
