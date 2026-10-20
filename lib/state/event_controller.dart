@@ -92,8 +92,11 @@ class EventController extends ChangeNotifier {
     if (event.id == null && event.recurrenceFrequency != 'none') {
       final until = event.recurrenceUntil;
       final startDay = DateTime(event.startAt.year, event.startAt.month, event.startAt.day);
-      final untilDay = until == null ? null : DateTime(until.year, until.month, until.day);
-      if (untilDay == null || untilDay.isBefore(startDay)) {
+      if (until == null) {
+        throw ArgumentError('Choose a repeat-until date on or after the event date.');
+      }
+      final untilDay = DateTime(until.year, until.month, until.day);
+      if (untilDay.isBefore(startDay)) {
         throw ArgumentError('Choose a repeat-until date on or after the event date.');
       }
       final seriesId = DateTime.now().microsecondsSinceEpoch.toString();
@@ -136,12 +139,13 @@ class EventController extends ChangeNotifier {
       }
     }
     if (selected == null) return;
+    final selectedEvent = selected;
 
-    if (entireSeries && selected.recurrenceSeriesId != null) {
+    if (entireSeries && selectedEvent.recurrenceSeriesId != null) {
       final series = _events
-          .where((event) => event.recurrenceSeriesId == selected.recurrenceSeriesId)
+          .where((event) => event.recurrenceSeriesId == selectedEvent.recurrenceSeriesId)
           .toList(growable: false);
-      await _database.deleteSeries(selected.recurrenceSeriesId!);
+      await _database.deleteSeries(selectedEvent.recurrenceSeriesId!);
       final ids = series.map((event) => event.id).whereType<int>().toSet();
       _replaceEvents(_events.where((event) => !ids.contains(event.id)));
       _errorMessage = null;
