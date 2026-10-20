@@ -93,7 +93,7 @@ void main() {
       );
 
       expect(occurrences.map((e) => e.startAt.month), [1, 2, 3]);
-      expect(occurrences.map((e) => e.startAt.day), [31, 28, 28]);
+      expect(occurrences.map((e) => e.startAt.day), [31, 28, 31]);
     });
   });
 }
