@@ -4,6 +4,7 @@ import '../models/schedule_event.dart';
 import 'calendar_screen.dart';
 import 'event_form_screen.dart';
 import 'home_screen.dart';
+import 'search_screen.dart';
 
 class AppShell extends StatefulWidget {
   const AppShell({super.key});
@@ -17,9 +18,7 @@ class _AppShellState extends State<AppShell> {
 
   Future<void> _openEventForm([ScheduleEvent? event]) async {
     await Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
-        builder: (_) => EventFormScreen(event: event),
-      ),
+      MaterialPageRoute<void>(builder: (_) => EventFormScreen(event: event)),
     );
   }
 
@@ -28,40 +27,56 @@ class _AppShellState extends State<AppShell> {
     final pages = IndexedStack(
       index: _selectedIndex,
       children: [
-        HomeScreen(
-          onAddEvent: () => _openEventForm(),
-          onEditEvent: _openEventForm,
-        ),
-        CalendarScreen(
-          onAddEvent: () => _openEventForm(),
-          onEditEvent: _openEventForm,
-        ),
+        HomeScreen(onAddEvent: () => _openEventForm(), onEditEvent: _openEventForm),
+        CalendarScreen(onAddEvent: () => _openEventForm(), onEditEvent: _openEventForm),
+        SearchScreen(onEditEvent: _openEventForm),
       ],
     );
+
+    const destinations = [
+      NavigationDestination(
+        icon: Icon(Icons.grid_view_rounded),
+        selectedIcon: Icon(Icons.grid_view_rounded),
+        label: 'Today',
+      ),
+      NavigationDestination(
+        icon: Icon(Icons.calendar_month_rounded),
+        selectedIcon: Icon(Icons.calendar_month_rounded),
+        label: 'Calendar',
+      ),
+      NavigationDestination(
+        icon: Icon(Icons.search_rounded),
+        selectedIcon: Icon(Icons.search_rounded),
+        label: 'Search',
+      ),
+    ];
 
     return Scaffold(
       body: LayoutBuilder(
         builder: (context, constraints) {
-          // Keep bottom navigation on narrow/mobile layouts. Desktop gets a
-          // navigation rail and a readable max-width content column.
           if (constraints.maxWidth < 820) return pages;
-
           final extendedRail = constraints.maxWidth >= 1180;
           return Row(
             children: [
               NavigationRail(
                 selectedIndex: _selectedIndex,
-                onDestinationSelected: (index) =>
-                    setState(() => _selectedIndex = index),
+                onDestinationSelected: (index) => setState(() => _selectedIndex = index),
                 extended: extendedRail,
-                labelType:
-                    extendedRail ? null : NavigationRailLabelType.all,
-                leading: const Padding(
-                  padding: EdgeInsets.only(top: 18, bottom: 18),
-                  child: Icon(
-                    Icons.event_available_rounded,
-                    color: Color(0xFF5B5CE2),
-                    size: 28,
+                labelType: extendedRail ? null : NavigationRailLabelType.all,
+                leading: Padding(
+                  padding: const EdgeInsets.only(top: 18, bottom: 22),
+                  child: Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.primaryContainer,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Icon(
+                      Icons.event_available_rounded,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 27,
+                    ),
                   ),
                 ),
                 destinations: const [
@@ -75,9 +90,14 @@ class _AppShellState extends State<AppShell> {
                     selectedIcon: Icon(Icons.calendar_month_rounded),
                     label: Text('Calendar'),
                   ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.search_rounded),
+                    selectedIcon: Icon(Icons.search_rounded),
+                    label: Text('Search'),
+                  ),
                 ],
               ),
-              const VerticalDivider(width: 1, thickness: 1),
+              const VerticalDivider(width: 1),
               Expanded(
                 child: Center(
                   child: ConstrainedBox(
@@ -98,20 +118,8 @@ class _AppShellState extends State<AppShell> {
       bottomNavigationBar: MediaQuery.sizeOf(context).width < 820
           ? NavigationBar(
               selectedIndex: _selectedIndex,
-              onDestinationSelected: (index) =>
-                  setState(() => _selectedIndex = index),
-              destinations: const [
-                NavigationDestination(
-                  icon: Icon(Icons.grid_view_rounded),
-                  selectedIcon: Icon(Icons.grid_view_rounded),
-                  label: 'Today',
-                ),
-                NavigationDestination(
-                  icon: Icon(Icons.calendar_month_rounded),
-                  selectedIcon: Icon(Icons.calendar_month_rounded),
-                  label: 'Calendar',
-                ),
-              ],
+              onDestinationSelected: (index) => setState(() => _selectedIndex = index),
+              destinations: destinations,
             )
           : null,
     );
