@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#f7f5f2">
   <meta name="description" content="Daymark is a clean, offline-first personal event scheduler for Android. Plan your day, keep track of what matters, and stay organized.">
   <meta property="og:title" content="Daymark — Make room for what matters">
-  <meta property="og:description" content="A calmer way to plan your day. Download Daymark for Android.">
+  <meta property="og:description" content="A calmer way to plan your day. Download Daymark for Android or Windows.">
   <meta property="og:type" content="website">
   <title>Daymark — Make room for what matters</title>
   <style>
@@ -88,7 +88,7 @@
     .download-band:after{content:"";position:absolute;width:230px;height:230px;border-radius:50%;background:#6559d4;opacity:.23;right:100px;top:-150px}
     .download-band h2{font-size:32px;margin:0 0 9px;position:relative;z-index:1}
     .download-band p{color:#c6c3d5;font-size:14px;margin:0;position:relative;z-index:1}
-    .download-band .button{position:relative;z-index:1;white-space:nowrap}
+    .download-band .button{position:relative;z-index:1;white-space:nowrap}.download-actions{display:flex;gap:10px;flex-wrap:wrap;position:relative;z-index:1}.download-band .secondary{background:#38364f;color:#fff;border-color:#55536a}
     footer{border-top:1px solid var(--line);padding:24px 0 32px;color:var(--muted);font-size:12px}
     .footer-inner{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}
     .footer-links{display:flex;gap:20px}.footer-links a{text-decoration:none}.footer-links a:hover{color:var(--ink)}
@@ -118,18 +118,19 @@
         <h1>Make room for<br>what <span>matters.</span></h1>
         <p class="hero-copy">A calmer way to keep up with your plans. Organize your events, see what’s coming up, and keep your schedule close — without the clutter.</p>
         <div class="actions">
-          <a id="download-btn" class="button primary" href="https://github.com/RajCodes2006/event-scheduler/releases" aria-label="Check Android APK releases">
+          <a id="android-download-btn" class="button primary" href="https://github.com/RajCodes2006/event-scheduler/releases" aria-label="Download Daymark Android APK">
             <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            <span id="download-label">Check APK availability</span>
+            <span id="android-download-label">Android APK coming soon</span>
           </a>
-          <a class="button secondary" href="https://github.com/RajCodes2006/event-scheduler" target="_blank" rel="noreferrer">
-            Explore the project <span aria-hidden="true">↗</span>
+          <a id="windows-download-btn" class="button secondary" href="https://github.com/RajCodes2006/event-scheduler/releases" aria-label="Download Daymark for Windows">
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span id="windows-download-label">Windows app coming soon</span>
           </a>
         </div>
         <div class="release-note" id="release-note" role="status" aria-live="polite">Checking the latest Android release…</div>
         <div class="trust-row">
           <span class="trust-item"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3 19 6v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6l7-3Z" stroke="currentColor" stroke-width="1.7"/><path d="m9 12 2 2 4-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg> Simple by design</span>
-          <span class="trust-item"><svg viewBox="0 0 24 24" fill="none"><rect x="5" y="3" width="14" height="18" rx="3" stroke="currentColor" stroke-width="1.7"/><path d="M9 7h6M9 11h6M9 15h3" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg> Made for Android</span>
+          <span class="trust-item"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg> Android + Windows</span>
           <span class="trust-item"><svg viewBox="0 0 24 24" fill="none"><path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M4 4.5v4h4M12 8v4l3 2" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg> Keep your day in view</span>
         </div>
       </div>
@@ -183,11 +184,13 @@
 
     <section class="wrap" id="download">
       <div class="download-band">
-        <div><h2>A little more clarity starts here.</h2><p>Get Daymark for Android and give your plans a place of their own.</p></div>
-        <a id="bottom-download" class="button primary" href="https://github.com/RajCodes2006/event-scheduler/releases"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="bottom-download-label">Check for APK</span></a>
+        <div><h2>A little more clarity starts here.</h2><p>Choose your platform and give your plans a place of their own.</p></div>
+        <div class="download-actions">
+          <a id="android-download-bottom" class="button primary" href="https://github.com/RajCodes2006/event-scheduler/releases"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v11m0 0 4-4m-4 4-4-4M5 17v3h14v-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="android-download-bottom-label">Android APK</span></a>
+          <a id="windows-download-bottom" class="button secondary" href="https://github.com/RajCodes2006/event-scheduler/releases"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span id="windows-download-bottom-label">Windows ZIP</span></a>
+        </div>
       </div>
     </section>
-  </main>
 
   <footer>
     <div class="wrap footer-inner">
@@ -200,13 +203,24 @@
   </footer>
   <script>
     const REPO = "RajCodes2006/event-scheduler";
-    const releasePage = "https://github.com/" + REPO + "/releases";
+    const RELEASES_URL = "https://github.com/" + REPO + "/releases";
     document.getElementById("year").textContent = new Date().getFullYear();
-    async function loadLatestApk() {
-      const button = document.getElementById("download-btn");
-      const label = document.getElementById("download-label");
-      const bottomButton = document.getElementById("bottom-download");
-      const bottomLabel = document.getElementById("bottom-download-label");
+
+    function setDownloadButton(buttonId, labelId, asset, readyText, pendingText) {
+      const button = document.getElementById(buttonId);
+      const label = document.getElementById(labelId);
+      if (asset) {
+        button.href = asset.browser_download_url;
+        button.setAttribute("download", asset.name);
+        label.textContent = readyText;
+      } else {
+        button.href = RELEASES_URL;
+        button.removeAttribute("download");
+        label.textContent = pendingText;
+      }
+    }
+
+    async function loadLatestDownloads() {
       const note = document.getElementById("release-note");
       try {
         const response = await fetch("https://api.github.com/repos/" + REPO + "/releases/latest", {
@@ -214,33 +228,42 @@
         });
         if (!response.ok) throw new Error("No published release");
         const release = await response.json();
-        const apk = (release.assets || []).find(asset => asset.name.toLowerCase().endsWith(".apk"));
-        if (!apk) throw new Error("Release has no APK asset");
-        const prettySize = apk.size ? (apk.size / (1024 * 1024)).toFixed(1) + " MB" : "APK";
-        const version = release.tag_name || release.name || "Latest";
-        button.href = apk.browser_download_url;
-        button.removeAttribute("aria-disabled");
-        button.setAttribute("download", apk.name);
-        label.textContent = "Download APK";
-        bottomButton.href = apk.browser_download_url;
-        bottomButton.setAttribute("download", apk.name);
-        bottomLabel.textContent = "Download for Android";
-        const date = release.published_at ? new Date(release.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }) : "";
-        note.innerHTML = "<strong>" + escapeHtml(version) + "</strong> · " + escapeHtml(prettySize) + (date ? " · Updated " + escapeHtml(date) : "") + ' · <a href="' + releasePage + '" style="color:inherit">Release notes</a>';
+        const assets = Array.isArray(release.assets) ? release.assets : [];
+        const apk = assets.find(asset => asset.name.toLowerCase().endsWith(".apk"));
+        const windowsZip = assets.find(asset => asset.name.toLowerCase() === "daymark-windows-x64.zip");
+        setDownloadButton("android-download-btn", "android-download-label", apk, "Download Android APK", "Android APK coming soon");
+        setDownloadButton("android-download-bottom", "android-download-bottom-label", apk, "Download Android APK", "Android APK coming soon");
+        setDownloadButton("windows-download-btn", "windows-download-label", windowsZip, "Download for Windows", "Windows app coming soon");
+        setDownloadButton("windows-download-bottom", "windows-download-bottom-label", windowsZip, "Download Windows ZIP", "Windows app coming soon");
+
+        const version = escapeHtml(release.tag_name || release.name || "Latest");
+        const status = [];
+        if (apk) status.push("Android ready · " + formatSize(apk.size));
+        else status.push("Android build pending");
+        if (windowsZip) status.push("Windows ready · " + formatSize(windowsZip.size));
+        else status.push("Windows build pending");
+        const date = release.published_at
+          ? " · Updated " + escapeHtml(new Date(release.published_at).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }))
+          : "";
+        note.innerHTML = "<strong>" + version + "</strong> · " + status.map(escapeHtml).join(" · ") + date +
+          ' · <a href="' + RELEASES_URL + '" style="color:inherit">Release notes</a>';
       } catch (_) {
-        button.href = releasePage;
-        button.removeAttribute("download");
-        label.textContent = "APK coming soon";
-        bottomButton.href = releasePage;
-        bottomButton.removeAttribute("download");
-        bottomLabel.textContent = "View release status";
-        note.innerHTML = "The APK hasn’t been published yet. <a href=\"" + releasePage + "\" style=\"color:#5952a9;font-weight:700\">Check GitHub Releases</a> for availability.";
+        setDownloadButton("android-download-btn", "android-download-label", null, "Download Android APK", "Android APK coming soon");
+        setDownloadButton("android-download-bottom", "android-download-bottom-label", null, "Download Android APK", "Android APK coming soon");
+        setDownloadButton("windows-download-btn", "windows-download-label", null, "Download for Windows", "Windows app coming soon");
+        setDownloadButton("windows-download-bottom", "windows-download-bottom-label", null, "Download Windows ZIP", "Windows app coming soon");
+        note.innerHTML = 'The first downloads are being prepared. <a href="' + RELEASES_URL + '" style="color:#5952a9;font-weight:700">Check GitHub Releases</a>.';
       }
+    }
+
+    function formatSize(bytes) {
+      return bytes ? (bytes / (1024 * 1024)).toFixed(1) + " MB" : "download";
     }
     function escapeHtml(value) {
       return String(value).replace(/[&<>"']/g, character => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[character]));
     }
-    loadLatestApk();
+
+    loadLatestDownloads();
   </script>
 </body>
 </html>
