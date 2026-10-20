@@ -11,6 +11,7 @@ Daymark is a minimal personal event scheduler built with Flutter. It is designed
 - On-device event reminders (5, 10, 15, 30, or 60 minutes before, or off)
 - Local SQLite persistence
 - Material 3 interface with an indigo theme
+- Custom Daymark calendar-and-reminder launcher icon on Android and Windows
 - Download page for Android and Windows builds
 
 ## Download
@@ -86,19 +87,21 @@ website/
 .github/workflows/
   flutter-checks.yml
   release-apk.yml
+tools/
+  create_windows_icon.py
 ```
 
 ## Publishing new builds
 
 1. Configure the repository secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD` with a persistent signing key.
 2. Open **Actions → Build and publish Android + Windows downloads** in GitHub.
-3. Select **Run workflow** and enter a new version tag such as `v1.0.3` (each release should use a new tag).
+3. Select **Run workflow** and enter a new version tag such as `v1.0.4` (each release should use a new tag).
 4. Wait for Android and Windows builds to finish. The workflow publishes the APK and Windows ZIP together.
 5. The website checks the latest GitHub Release and updates both download buttons automatically.
 
 Never commit the keystore or its passwords to the repository.
 
-The website is a static HTML page, deployed from the `website` directory.
+The website is a static HTML page, deployed from the `website` directory. The Windows release workflow generates and applies the custom ICO before building the desktop package.
 
 ## Storage and platform notes
 
