@@ -7,10 +7,13 @@ Daymark is a minimal personal event scheduler built with Flutter. It is designed
 - Home dashboard with today's and upcoming events
 - Monthly calendar with markers for scheduled dates
 - Create, edit, and delete events
+- Daily, weekly, and monthly repeating event series with individual or whole-series deletion
 - Event title, category, notes, location, date, start time, and end time
 - On-device event reminders (5, 10, 15, 30, or 60 minutes before, or off)
 - Local SQLite persistence
-- Material 3 interface with an indigo theme
+- Search by event title, notes, location, or category with date and category filters
+- Persistent light and dark themes
+- Refined Material 3 interface with indigo gradients and category-aware event cards
 - Custom Daymark calendar-and-reminder launcher icon on Android and Windows
 - Download page for Android and Windows builds
 
@@ -97,7 +100,7 @@ tools/
 2. Open **Actions → Build and publish Android + Windows downloads** in GitHub.
 3. Select **Run workflow** and enter a new version tag such as `v1.0.4` (each release should use a new tag).
 4. Wait for Android and Windows builds to finish. The workflow publishes the APK and Windows ZIP together.
-5. The website checks the latest GitHub Release and updates both download buttons automatically.
+5. The website checks the latest GitHub Release and updates both download buttons automatically. The matching app version is maintained in `pubspec.yaml`.
 
 Never commit the keystore or its passwords to the repository.
 
@@ -111,5 +114,7 @@ The website is a static HTML page, deployed from the `website` directory. The Wi
 - Android local reminders are scheduled on-device and can alert while Daymark is closed; notification permission is requested when saving an event with a reminder.
 - Choose no reminder, 5, 10, 15, or 30 minutes, or 1 hour before the event.
 - Reminder times are stored with events in SQLite. Existing events migrate to a 15-minute default.
+- Recurring events are stored as separate occurrence rows with a shared series identifier so each occurrence can have its own reminder and can be deleted independently.
+- Dark-mode preference is stored locally and survives app restarts.
 - Reminders are currently supported on Android only; Windows reminder scheduling is not yet supported.
 - Events appear on their start date in the calendar. Overnight events can be created but are listed under their start date.
