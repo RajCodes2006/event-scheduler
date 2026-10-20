@@ -26,6 +26,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
   late int _reminderMinutesBefore;
   late String _recurrenceFrequency;
   DateTime? _recurrenceUntil;
+  bool _repeatUntilCustom = false;
   bool _saving = false;
 
   static const List<String> _categories = [
@@ -58,7 +59,12 @@ class _EventFormScreenState extends State<EventFormScreen> {
   }
 
   DateTime _defaultRepeatUntil() {
-    final candidate = DateTime(_startAt.year, _startAt.month, _startAt.day + 30);
+    final spanDays = switch (_recurrenceFrequency) {
+      'weekly' => 90,
+      'monthly' => 365,
+      _ => 30,
+    };
+    final candidate = DateTime(_startAt.year, _startAt.month, _startAt.day + spanDays);
     final appMax = DateTime(2050, 12, 31);
     return candidate.isAfter(appMax) ? appMax : candidate;
   }
@@ -120,19 +126,31 @@ class _EventFormScreenState extends State<EventFormScreen> {
       lastDate: _lastAllowedRepeatDate(),
       helpText: 'LAST REPEAT DATE',
     );
-    if (picked != null) setState(() => _recurrenceUntil = picked);
+    if (picked != null) {
+      setState(() {
+        _recurrenceUntil = picked;
+        _repeatUntilCustom = true;
+      });
+    }
   }
 
   void _setRepeatFrequency(String value) {
     setState(() {
       _recurrenceFrequency = value;
-      if (value != 'none') {
-        final startDay = DateTime(_startAt.year, _startAt.month, _startAt.day);
-        if (_recurrenceUntil == null || _recurrenceUntil!.isBefore(startDay)) {
-          _recurrenceUntil = _defaultRepeatUntil();
-        }
-      } else {
+      if (value == 'none') {
         _recurrenceUntil = null;
+        _repeatUntilCustom = false;
+        return;
+      }
+
+      final startDay = DateTime(_startAt.year, _startAt.month, _startAt.day);
+      if (!_repeatUntilCustom ||
+          _recurrenceUntil == null ||
+          _recurrenceUntil!.isBefore(startDay)) {
+        _recurrenceUntil = _defaultRepeatUntil();
+        _repeatUntilCustom = false;
+      } else if (_recurrenceUntil!.isAfter(_lastAllowedRepeatDate())) {
+        _recurrenceUntil = _lastAllowedRepeatDate();
       }
     });
   }
