@@ -1,62 +1,69 @@
-# Daymark — Flutter Event Scheduler
+# Daymark — Event Scheduler
 
-A minimal personal event scheduler starter built with Flutter, Provider, `table_calendar`, and SQLite. It is designed for an offline-first Android/iOS app; cloud sync and reminders are intentionally left for the next development phase.
+Daymark is a minimal personal event scheduler built with Flutter. It is designed for **Android and Windows** with an offline-first SQLite database.
 
-## Included in this starter
+## Features
 
 - Home dashboard with today's and upcoming events
-- Month calendar with markers for scheduled dates
-- Create and edit events
-- Delete events with a confirmation prompt
+- Monthly calendar with markers for scheduled dates
+- Create, edit, and delete events
 - Event title, category, notes, location, date, start time, and end time
-- SQLite persistence on Android/iOS (events survive app restarts)
-- Material 3 layout with a minimal indigo theme
+- Local SQLite persistence
+- Material 3 interface with an indigo theme
+- Download page for Android and Windows builds
 
-## 1. Check Flutter on your computer
+## Download
 
-Open PowerShell or the VS Code terminal:
+Visit the Daymark website to find the latest app builds:
 
-```powershell
-flutter doctor
-```
+**https://daymark-download.vercel.app/**
 
-Resolve any Android toolchain errors reported by Flutter Doctor before running the app.
+Releases and release notes are also available here:
 
-## 2. Generate the platform project
+**https://github.com/RajCodes2006/event-scheduler/releases**
 
-Do this in the folder where you keep your projects:
+### Android
 
-```powershell
-flutter create event_scheduler
-cd event_scheduler
-```
+1. Download `app-release.apk` from a GitHub Release.
+2. Open the APK on your Android device.
+3. Approve installation from your browser or file manager if Android asks.
 
-This creates the Android/iOS platform folders that are not included in this source archive.
+### Windows
 
-## 3. Copy the starter files
+1. Download `daymark-windows-x64.zip` from a GitHub Release.
+2. Extract the ZIP to a folder.
+3. Run `event_scheduler.exe` from the extracted folder. Keep the included DLL and `data` files beside the executable.
 
-Extract this archive. Copy its `lib` folder into the generated `event_scheduler` folder, replacing the generated `lib` folder. Then replace the generated `pubspec.yaml` with the one from this archive.
+Windows downloads target **64-bit Windows**. The ZIP is a portable app package, not an installer.
 
-Keep the `android`, `ios`, and other platform folders created by `flutter create`.
+## Development setup
 
-## 4. Install dependencies
+Install Flutter and the Android SDK for Android builds. To build Windows locally, use Windows with Visual Studio's **Desktop development with C++** workload installed.
 
-From the root of `event_scheduler`:
+From the project root:
 
 ```powershell
 flutter pub get
 ```
 
-## 5. Run it
+If the Windows platform folder is not present yet, generate it:
 
-Start an Android emulator or connect an Android phone with USB debugging enabled, then run:
+```powershell
+flutter create --platforms=windows --project-name event_scheduler .
+```
+
+Run on a connected Android phone or emulator:
 
 ```powershell
 flutter devices
 flutter run
 ```
 
-If Flutter offers multiple devices, select your Android emulator or phone.
+Run the Windows desktop app on a properly configured Windows development machine:
+
+```powershell
+flutter run -d windows
+```
 
 ## Project structure
 
@@ -65,23 +72,34 @@ lib/
   main.dart
   data/event_database.dart
   models/schedule_event.dart
-  screens/app_shell.dart
-  screens/home_screen.dart
-  screens/calendar_screen.dart
-  screens/event_form_screen.dart
+  screens/
+    app_shell.dart
+    home_screen.dart
+    calendar_screen.dart
+    event_form_screen.dart
   state/event_controller.dart
   widgets/event_card.dart
+website/
+  index.html
+.github/workflows/
+  deploy-site.yml
+  release-apk.yml
 ```
 
-## Current limits
+## Publishing new builds
 
-- SQLite storage is local to the device. It does not sync across phones yet.
-- Notifications/reminders are not included in this first milestone.
-- The calendar currently shows events on their start date. Overnight events can be created, but are listed under their start date.
-- `sqflite` targets Android/iOS in this starter; desktop and web require a different database setup.
+1. Open **Actions → Build and publish Android + Windows downloads** in GitHub.
+2. Select **Run workflow**.
+3. Enter a new version tag such as `v1.0.1` (each release should use a new tag).
+4. Wait for Android and Windows builds to finish. The workflow publishes the APK and Windows ZIP together.
+5. The website checks the latest GitHub Release and updates both download buttons automatically.
 
-## Next milestones
+The website is a static HTML page, deployed from the `website` directory.
 
-1. Run and validate the core CRUD flow on your device.
-2. Add local notifications and reminder times.
-3. Add optional cloud sync and sign-in when the offline version is stable.
+## Storage and platform notes
+
+- Event data is stored locally on each device; it does not sync between devices yet.
+- Android uses the native sqflite plugin.
+- Windows uses `sqflite_common_ffi` and saves its database under the application's support directory.
+- Notifications and cloud sync are not included in the current version.
+- Events appear on their start date in the calendar. Overnight events can be created but are listed under their start date.
