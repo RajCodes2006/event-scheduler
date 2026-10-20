@@ -1,0 +1,25 @@
+name: event_scheduler
+description: A clean personal event scheduler built with Flutter and SQLite.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  provider: ^6.1.5+1
+  sqflite: ^2.4.4+2
+  path: ^1.9.1
+  table_calendar: ^3.3.0
+  intl: ^0.20.3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
