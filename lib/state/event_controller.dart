@@ -91,7 +91,9 @@ class EventController extends ChangeNotifier {
   Future<void> saveEvent(ScheduleEvent event) async {
     if (event.id == null && event.recurrenceFrequency != 'none') {
       final until = event.recurrenceUntil;
-      if (until == null || until.isBefore(event.startAt)) {
+      final startDay = DateTime(event.startAt.year, event.startAt.month, event.startAt.day);
+      final untilDay = until == null ? null : DateTime(until.year, until.month, until.day);
+      if (untilDay == null || untilDay.isBefore(startDay)) {
         throw ArgumentError('Choose a repeat-until date on or after the event date.');
       }
       final seriesId = DateTime.now().microsecondsSinceEpoch.toString();
