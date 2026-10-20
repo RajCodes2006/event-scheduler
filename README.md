@@ -84,17 +84,19 @@ lib/
 website/
   index.html
 .github/workflows/
-  deploy-site.yml
+  flutter-checks.yml
   release-apk.yml
 ```
 
 ## Publishing new builds
 
-1. Open **Actions → Build and publish Android + Windows downloads** in GitHub.
-2. Select **Run workflow**.
-3. Enter a new version tag such as `v1.0.1` (each release should use a new tag).
+1. Configure the repository secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD` with a persistent signing key.
+2. Open **Actions → Build and publish Android + Windows downloads** in GitHub.
+3. Select **Run workflow** and enter a new version tag such as `v1.0.3` (each release should use a new tag).
 4. Wait for Android and Windows builds to finish. The workflow publishes the APK and Windows ZIP together.
 5. The website checks the latest GitHub Release and updates both download buttons automatically.
+
+Never commit the keystore or its passwords to the repository.
 
 The website is a static HTML page, deployed from the `website` directory.
 
@@ -103,7 +105,8 @@ The website is a static HTML page, deployed from the `website` directory.
 - Event data is stored locally on each device; it does not sync between devices yet.
 - Android uses the native sqflite plugin.
 - Windows uses `sqflite_common_ffi` and saves its database under the application's support directory.
-- Android local reminders are scheduled on-device and can alert while Daymark is closed; Android notification permission is required.
+- Android local reminders are scheduled on-device and can alert while Daymark is closed; notification permission is requested when saving an event with a reminder.
+- Choose no reminder, 5, 10, 15, or 30 minutes, or 1 hour before the event.
 - Reminder times are stored with events in SQLite. Existing events migrate to a 15-minute default.
-- Scheduled reminders currently run on Android; Windows reminder scheduling is not yet supported.
+- Reminders are currently supported on Android only; Windows reminder scheduling is not yet supported.
 - Events appear on their start date in the calendar. Overnight events can be created but are listed under their start date.
