@@ -28,6 +28,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = context.watch<EventController>();
+    final scheme = Theme.of(context).colorScheme;
     final selectedEvents = controller.eventsForDay(_selectedDay);
 
     return SafeArea(
@@ -55,9 +56,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 Container(
                   padding: const EdgeInsets.fromLTRB(8, 12, 8, 8),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: scheme.surface,
                     borderRadius: BorderRadius.circular(22),
-                    border: Border.all(color: const Color(0xFFEAEBF2)),
+                    border: Border.all(color: scheme.outlineVariant),
                   ),
                   child: TableCalendar<ScheduleEvent>(
                     firstDay: DateTime(2020, 1, 1),
@@ -68,36 +69,37 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     startingDayOfWeek: StartingDayOfWeek.monday,
                     calendarFormat: CalendarFormat.month,
                     availableGestures: AvailableGestures.horizontalSwipe,
-                    headerStyle: const HeaderStyle(
+                    headerStyle: HeaderStyle(
                       titleCentered: true,
                       formatButtonVisible: false,
                       leftChevronIcon: Icon(Icons.chevron_left_rounded),
                       rightChevronIcon: Icon(Icons.chevron_right_rounded),
                       titleTextStyle: TextStyle(
+                        color: scheme.onSurface,
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
-                    calendarStyle: const CalendarStyle(
+                    calendarStyle: CalendarStyle(
                       outsideDaysVisible: false,
                       markersMaxCount: 3,
                       markerDecoration: BoxDecoration(
-                        color: Color(0xFF5B5CE2),
+                        color: scheme.primary,
                         shape: BoxShape.circle,
                       ),
                       selectedDecoration: BoxDecoration(
-                        color: Color(0xFF5B5CE2),
+                        color: scheme.primary,
                         shape: BoxShape.circle,
                       ),
                       todayDecoration: BoxDecoration(
-                        color: Color(0xFFE9E9FF),
+                        color: scheme.secondaryContainer,
                         shape: BoxShape.circle,
                       ),
                       todayTextStyle: TextStyle(
-                        color: Color(0xFF4243B8),
+                        color: scheme.onSecondaryContainer,
                         fontWeight: FontWeight.w700,
                       ),
-                      weekendTextStyle: TextStyle(color: Color(0xFF777B8F)),
+                      weekendTextStyle: TextStyle(color: scheme.onSurfaceVariant),
                     ),
                     onDaySelected: (selectedDay, focusedDay) {
                       setState(() {
@@ -121,10 +123,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   selectedEvents.isEmpty
                       ? 'No events on this day.'
                       : '${selectedEvents.length} event${selectedEvents.length == 1 ? '' : 's'} planned',
-                  style: const TextStyle(
-                    color: Color(0xFF777B8F),
-                    fontSize: 13,
-                  ),
+                  style: TextStyle(color: scheme.onSurfaceVariant, fontSize: 13),
                 ),
                 const SizedBox(height: 14),
               ]),
@@ -171,9 +170,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       key: ValueKey('calendar-${event.id ?? event.title}'),
                       event: event,
                       onEdit: widget.onEditEvent,
-                      onDelete: (item) async {
+                      onDelete: (item, {bool? entireSeries}) async {
                         if (item.id != null) {
-                          await context.read<EventController>().deleteEvent(item.id!);
+                          await context.read<EventController>().deleteEvent(item.id!, entireSeries: entireSeries ?? false);
                         }
                       },
                     );
@@ -205,17 +204,18 @@ class _EmptyDayPanel extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 30, color: const Color(0xFF9A9DB0)),
+          Icon(icon, size: 30, color: Theme.of(context).colorScheme.onSurfaceVariant),
           const SizedBox(height: 9),
           Text(
             message,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: Color(0xFF777B8F)),
+            style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
           if (onAddEvent != null) ...[
             const SizedBox(height: 12),
