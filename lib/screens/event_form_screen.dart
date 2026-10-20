@@ -57,6 +57,18 @@ class _EventFormScreenState extends State<EventFormScreen> {
     super.dispose();
   }
 
+  DateTime _defaultRepeatUntil() {
+    final candidate = DateTime(_startAt.year, _startAt.month, _startAt.day + 30);
+    final appMax = DateTime(2050, 12, 31);
+    return candidate.isAfter(appMax) ? appMax : candidate;
+  }
+
+  DateTime _lastAllowedRepeatDate() {
+    final candidate = DateTime(_startAt.year, _startAt.month, _startAt.day + 365);
+    final appMax = DateTime(2050, 12, 31);
+    return candidate.isAfter(appMax) ? appMax : candidate;
+  }
+
   Future<void> _chooseDate() async {
     final picked = await showDatePicker(
       context: context,
@@ -69,7 +81,10 @@ class _EventFormScreenState extends State<EventFormScreen> {
     setState(() {
       _startAt = DateTime(picked.year, picked.month, picked.day, _startAt.hour, _startAt.minute);
       if (_recurrenceUntil != null && _recurrenceUntil!.isBefore(_startAt)) {
-        _recurrenceUntil = DateTime(_startAt.year, _startAt.month, _startAt.day + 30);
+        _recurrenceUntil = _defaultRepeatUntil();
+      }
+      if (_recurrenceUntil != null && _recurrenceUntil!.isAfter(_lastAllowedRepeatDate())) {
+        _recurrenceUntil = _lastAllowedRepeatDate();
       }
       _endAt = DateTime(picked.year, picked.month, picked.day, _endAt.hour, _endAt.minute);
       if (!_endAt.isAfter(_startAt)) _endAt = _startAt.add(const Duration(hours: 1));
@@ -97,12 +112,12 @@ class _EventFormScreenState extends State<EventFormScreen> {
 
   Future<void> _chooseRepeatUntil() async {
     final startDay = DateTime(_startAt.year, _startAt.month, _startAt.day);
-    final initial = _recurrenceUntil ?? startDay.add(const Duration(days: 30));
+    final initial = _recurrenceUntil ?? _defaultRepeatUntil();
     final picked = await showDatePicker(
       context: context,
       initialDate: initial.isBefore(startDay) ? startDay : initial,
       firstDate: startDay,
-      lastDate: DateTime(2050, 12, 31),
+      lastDate: _lastAllowedRepeatDate(),
       helpText: 'LAST REPEAT DATE',
     );
     if (picked != null) setState(() => _recurrenceUntil = picked);
@@ -114,7 +129,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
       if (value != 'none') {
         final startDay = DateTime(_startAt.year, _startAt.month, _startAt.day);
         if (_recurrenceUntil == null || _recurrenceUntil!.isBefore(startDay)) {
-          _recurrenceUntil = startDay.add(const Duration(days: 30));
+          _recurrenceUntil = _defaultRepeatUntil();
         }
       } else {
         _recurrenceUntil = null;
@@ -292,7 +307,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
                   OutlinedButton.icon(
                     onPressed: _chooseRepeatUntil,
                     icon: const Icon(Icons.event_repeat_rounded),
-                    label: Text('Repeat until ${DateFormat('d MMM yyyy').format(_recurrenceUntil ?? _startAt.add(const Duration(days: 30)))}'),
+                    label: Text('Repeat until ${DateFormat('d MMM yyyy').format(_recurrenceUntil ?? _defaultRepeatUntil())}'),
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 17),
                       alignment: Alignment.centerLeft,
