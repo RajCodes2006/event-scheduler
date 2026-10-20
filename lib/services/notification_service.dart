@@ -156,7 +156,6 @@ class NotificationService {
           .map((event) => event.id!)
           .toSet();
       final pending = await _plugin.pendingNotificationRequests();
-      final pendingIds = pending.map((reminder) => reminder.id).toSet();
 
       for (final reminder in pending) {
         if (!savedIds.contains(reminder.id)) {
@@ -181,7 +180,7 @@ class NotificationService {
         // If the reminder time is already due, leave an existing OS alarm
         // alone. If it already fired, don't recreate it on every app launch.
         if (!reminderAt.isAfter(now)) {
-          if (pendingIds.contains(event.id)) continue;
+          // Keep any existing due alarm; don't recreate one that already fired.
           continue;
         }
 
