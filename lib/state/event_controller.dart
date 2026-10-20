@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../data/event_database.dart';
 import '../models/schedule_event.dart';
+import '../services/notification_service.dart';
 
 class EventController extends ChangeNotifier {
   final EventDatabase _database = EventDatabase.instance;
@@ -19,16 +20,23 @@ class EventController extends ChangeNotifier {
   Future<void> loadEvents() async {
     _isLoading = true;
     _errorMessage = null;
+    var loadedSuccessfully = false;
     notifyListeners();
 
     try {
       _replaceEvents(await _database.getAllEvents());
+      loadedSuccessfully = true;
     } catch (error) {
       _errorMessage = 'Could not load events. Please restart the app.';
       debugPrint('loadEvents error: $error');
     } finally {
       _isLoading = false;
       notifyListeners();
+    }
+
+    // Reconcile reminders after the main screen has finished loading.
+    if (loadedSuccessfully) {
+      await NotificationService.instance.syncReminders(_events);
     }
   }
 
@@ -70,25 +78,27 @@ class EventController extends ChangeNotifier {
   }
 
   Future<void> saveEvent(ScheduleEvent event) async {
+    final ScheduleEvent savedEvent;
+
     if (event.id == null) {
       final id = await _database.insertEvent(event);
-      _replaceEvents([
-        ..._events,
-        ScheduleEvent(
-          id: id,
-          title: event.title,
-          description: event.description,
-          location: event.location,
-          category: event.category,
-          startAt: event.startAt,
-          endAt: event.endAt,
-        ),
-      ]);
+      savedEvent = ScheduleEvent(
+        id: id,
+        title: event.title,
+        description: event.description,
+        location: event.location,
+        category: event.category,
+        startAt: event.startAt,
+        endAt: event.endAt,
+        reminderMinutesBefore: event.reminderMinutesBefore,
+      );
+      _replaceEvents([..._events, savedEvent]);
     } else {
       await _database.updateEvent(event);
+      savedEvent = event;
       final updated = _events
           .where((existing) => existing.id != event.id)
-          .followedBy([event]);
+          .followedBy([savedEvent]);
       _replaceEvents(updated);
     }
 
@@ -96,6 +106,8 @@ class EventController extends ChangeNotifier {
     // avoids a spinner flash and a second whole-app rebuild after every save.
     _errorMessage = null;
     notifyListeners();
+
+    await NotificationService.instance.scheduleReminder(savedEvent);
   }
 
   Future<void> deleteEvent(int id) async {
@@ -103,5 +115,7 @@ class EventController extends ChangeNotifier {
     _replaceEvents(_events.where((event) => event.id != id));
     _errorMessage = null;
     notifyListeners();
+
+    await NotificationService.instance.cancelReminder(id);
   }
 }
