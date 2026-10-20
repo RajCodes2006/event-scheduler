@@ -6,10 +6,14 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart' as sqflite_ffi;
 import 'package:provider/provider.dart';
 
 import 'screens/app_shell.dart';
+import 'services/notification_service.dart';
 import 'state/event_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialise local reminders (no permission prompt is shown here).
+  await NotificationService.instance.initialize();
 
   // On Windows, use the SQLite FFI implementation instead of the mobile plugin.
   if (Platform.isWindows) {
