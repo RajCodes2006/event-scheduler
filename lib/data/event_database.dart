@@ -30,7 +30,7 @@ class EventDatabase {
 
     _database = await openDatabase(
       path,
-      version: 1,
+      version: 2,
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE events (
@@ -40,9 +40,17 @@ class EventDatabase {
             location TEXT NOT NULL DEFAULT '',
             category TEXT NOT NULL DEFAULT 'Personal',
             start_at TEXT NOT NULL,
-            end_at TEXT NOT NULL
+            end_at TEXT NOT NULL,
+            reminder_minutes_before INTEGER NOT NULL DEFAULT 15
           )
         ''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+            'ALTER TABLE events ADD COLUMN reminder_minutes_before INTEGER NOT NULL DEFAULT 15',
+          );
+        }
       },
     );
 
