@@ -8,6 +8,7 @@ Daymark is a minimal personal event scheduler built with Flutter. It is designed
 - Monthly calendar with markers for scheduled dates
 - Create, edit, and delete events
 - Event title, category, notes, location, date, start time, and end time
+- On-device event reminders (5, 10, 15, 30, or 60 minutes before, or off)
 - Local SQLite persistence
 - Material 3 interface with an indigo theme
 - Download page for Android and Windows builds
@@ -72,6 +73,7 @@ lib/
   main.dart
   data/event_database.dart
   models/schedule_event.dart
+  services/notification_service.dart
   screens/
     app_shell.dart
     home_screen.dart
@@ -101,5 +103,7 @@ The website is a static HTML page, deployed from the `website` directory.
 - Event data is stored locally on each device; it does not sync between devices yet.
 - Android uses the native sqflite plugin.
 - Windows uses `sqflite_common_ffi` and saves its database under the application's support directory.
-- Notifications and cloud sync are not included in the current version.
+- Android local reminders are scheduled on-device and can alert while Daymark is closed; Android notification permission is required.
+- Reminder times are stored with events in SQLite. Existing events migrate to a 15-minute default.
+- Scheduled reminders currently run on Android; Windows reminder scheduling is not yet supported.
 - Events appear on their start date in the calendar. Overnight events can be created but are listed under their start date.
