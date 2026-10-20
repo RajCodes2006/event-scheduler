@@ -131,7 +131,7 @@ class ScheduleEvent {
           occurrenceStart = occurrenceStart.add(const Duration(days: 7));
           break;
         case 'monthly':
-          occurrenceStart = _sameDayNextMonth(occurrenceStart);
+          occurrenceStart = _sameDayNextMonth(occurrenceStart, startAt.day);
           break;
         default:
           return [this];
@@ -140,7 +140,7 @@ class ScheduleEvent {
     return occurrences;
   }
 
-  static DateTime _sameDayNextMonth(DateTime value) {
+  static DateTime _sameDayNextMonth(DateTime value, int targetDay) {
     final first = DateTime(
       value.year,
       value.month + 1,
@@ -152,7 +152,7 @@ class ScheduleEvent {
       value.microsecond,
     );
     final lastDay = DateTime(first.year, first.month + 1, 0).day;
-    final day = value.day < lastDay ? value.day : lastDay;
+    final day = targetDay < lastDay ? targetDay : lastDay;
     return DateTime(
       first.year,
       first.month,
