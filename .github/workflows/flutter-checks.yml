@@ -21,6 +21,11 @@ on:
 permissions:
   contents: read
 
+# Cancel superseded runs when several commits are pushed in quick succession.
+concurrency:
+  group: flutter-ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   android-test:
     name: Test and build Android
