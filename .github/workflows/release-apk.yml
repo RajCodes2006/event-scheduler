@@ -1,0 +1,55 @@
+name: Build and publish Android APK
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (example: v1.0.0)"
+        required: true
+        type: string
+        default: "v1.0.0"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build APK and create GitHub Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Show Flutter version
+        run: flutter --version
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      - name: Publish APK to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.version }}
+          name: Event Scheduler ${{ inputs.version }}
+          body: |
+            ## Event Scheduler for Android
+
+            Install the APK attached to this release.
+
+            - Download `app-release.apk` from the Assets section.
+            - On Android, open the downloaded APK and approve installation if prompted.
+            - Only install APKs you trust. This APK is published from the source in this repository.
+          draft: false
+          prerelease: false
+          files: build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
