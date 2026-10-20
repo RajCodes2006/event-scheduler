@@ -281,11 +281,11 @@ class HomeScreen extends StatelessWidget {
                       key: ValueKey('upcoming-${event.id ?? event.title}'),
                       event: event,
                       onEdit: onEditEvent,
-                      onDelete: (item, {bool entireSeries = false}) async {
+                      onDelete: (item, {bool? entireSeries}) async {
                         if (item.id != null) {
                           await context.read<EventController>().deleteEvent(
                                 item.id!,
-                                entireSeries: entireSeries,
+                                entireSeries: entireSeries ?? false,
                               );
                         }
                       },
