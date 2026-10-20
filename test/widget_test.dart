@@ -12,6 +12,7 @@ void main() {
         category: 'Study',
         startAt: DateTime(2026, 10, 21, 14, 30),
         endAt: DateTime(2026, 10, 21, 15, 30),
+        reminderMinutesBefore: 30,
       );
 
       final restored = ScheduleEvent.fromMap(event.toMap());
@@ -23,6 +24,7 @@ void main() {
       expect(restored.category, event.category);
       expect(restored.startAt, event.startAt);
       expect(restored.endAt, event.endAt);
+      expect(restored.reminderMinutesBefore, 30);
     });
 
     test('uses sensible defaults for optional stored text fields', () {
@@ -36,6 +38,7 @@ void main() {
       expect(event.description, '');
       expect(event.location, '');
       expect(event.category, 'Personal');
+      expect(event.reminderMinutesBefore, 15);
     });
   });
 }
