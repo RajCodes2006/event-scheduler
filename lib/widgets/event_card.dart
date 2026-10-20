@@ -77,78 +77,92 @@ class EventCard extends StatelessWidget {
     final dateLabel = DateFormat('EEE, d MMM').format(event.startAt);
     final timeLabel = '${DateFormat('h:mm a').format(event.startAt)} – '
         '${DateFormat('h:mm a').format(event.endAt)}';
+    final categoryColor = _categoryColor;
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
+    // Keep the splash on the card surface. Previously it was painted behind
+    // an opaque decorated Container, making taps look inconsistent.
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Material(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFEAEBF2)),
-      ),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(18),
-        onTap: () => onEdit(event),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(14, 14, 6, 14),
-          child: Row(
-            children: [
-              Container(
-                width: 4,
-                height: 54,
-                decoration: BoxDecoration(
-                  color: _categoryColor,
-                  borderRadius: BorderRadius.circular(8),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(18),
+          side: const BorderSide(color: Color(0xFFEAEBF2)),
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(18),
+          onTap: () => onEdit(event),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(14, 14, 6, 14),
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 54,
+                  decoration: BoxDecoration(
+                    color: categoryColor,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: _categoryColor.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(13),
+                const SizedBox(width: 12),
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: categoryColor.withValues(alpha: 0.10),
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: Icon(_categoryIcon, color: categoryColor, size: 21),
                 ),
-                child: Icon(_categoryIcon, color: _categoryColor, size: 21),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      event.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
-                    ),
-                    const SizedBox(height: 5),
-                    Text(
-                      '$dateLabel  •  $timeLabel',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF73768A)),
-                    ),
-                    if (event.location.trim().isNotEmpty) ...[
-                      const SizedBox(height: 4),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        event.location,
+                        event.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 12, color: Color(0xFF73768A)),
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
+                      const SizedBox(height: 5),
+                      Text(
+                        '$dateLabel  •  $timeLabel',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Color(0xFF73768A),
+                        ),
+                      ),
+                      if (event.location.trim().isNotEmpty) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          event.location,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Color(0xFF73768A),
+                          ),
+                        ),
+                      ],
                     ],
+                  ),
+                ),
+                PopupMenuButton<String>(
+                  tooltip: 'Event options',
+                  onSelected: (value) => _showActions(context, value),
+                  itemBuilder: (_) => const [
+                    PopupMenuItem(value: 'edit', child: Text('Edit')),
+                    PopupMenuItem(value: 'delete', child: Text('Delete')),
                   ],
                 ),
-              ),
-              PopupMenuButton<String>(
-                tooltip: 'Event options',
-                onSelected: (value) => _showActions(context, value),
-                itemBuilder: (_) => const [
-                  PopupMenuItem(value: 'edit', child: Text('Edit')),
-                  PopupMenuItem(value: 'delete', child: Text('Delete')),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
