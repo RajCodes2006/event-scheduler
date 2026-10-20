@@ -37,7 +37,7 @@ class NotificationService {
       }
 
       await _plugin.initialize(
-        const InitializationSettings(
+        settings: const InitializationSettings(
           android: AndroidInitializationSettings('ic_stat_daymark'),
         ),
       );
@@ -77,7 +77,7 @@ class NotificationService {
 
       // Always remove the old reminder first. This also handles reminders
       // being switched off or an event being moved to the past.
-      await _plugin.cancel(event.id!);
+      await _plugin.cancel(id: event.id!);
       if (event.reminderMinutesBefore <= 0) return;
       if (!event.startAt.isAfter(DateTime.now())) return;
 
@@ -102,11 +102,11 @@ class NotificationService {
           : 'Coming up soon.';
 
       await _plugin.zonedSchedule(
-        event.id!,
-        event.title,
-        body,
-        tz.TZDateTime.from(scheduledAt, tz.local),
-        const NotificationDetails(
+        id: event.id!,
+        title: event.title,
+        body: body,
+        scheduledDate: tz.TZDateTime.from(scheduledAt, tz.local),
+        notificationDetails: const NotificationDetails(
           android: AndroidNotificationDetails(
             'daymark_event_reminders',
             'Event reminders',
@@ -130,7 +130,7 @@ class NotificationService {
 
     try {
       await initialize();
-      if (_initialized) await _plugin.cancel(eventId);
+      if (_initialized) await _plugin.cancel(id: eventId);
     } catch (error) {
       debugPrint('Could not cancel Daymark reminder: $error');
     }
@@ -158,7 +158,7 @@ class NotificationService {
       final pending = await _plugin.pendingNotificationRequests();
       for (final reminder in pending) {
         if (!savedIds.contains(reminder.id)) {
-          await _plugin.cancel(reminder.id);
+          await _plugin.cancel(id: reminder.id);
         }
       }
 
