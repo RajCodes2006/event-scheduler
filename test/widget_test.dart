@@ -1,30 +1,41 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:event_scheduler/main.dart';
+import 'package:event_scheduler/models/schedule_event.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('ScheduleEvent', () {
+    test('serializes and restores all event fields', () {
+      final event = ScheduleEvent(
+        id: 12,
+        title: 'Project review',
+        description: 'Bring the notes',
+        location: 'Library',
+        category: 'Study',
+        startAt: DateTime(2026, 10, 21, 14, 30),
+        endAt: DateTime(2026, 10, 21, 15, 30),
+      );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      final restored = ScheduleEvent.fromMap(event.toMap());
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      expect(restored.id, event.id);
+      expect(restored.title, event.title);
+      expect(restored.description, event.description);
+      expect(restored.location, event.location);
+      expect(restored.category, event.category);
+      expect(restored.startAt, event.startAt);
+      expect(restored.endAt, event.endAt);
+    });
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    test('uses sensible defaults for optional stored text fields', () {
+      final event = ScheduleEvent.fromMap({
+        'id': 1,
+        'title': 'Quick task',
+        'start_at': DateTime(2026, 10, 21, 9).toIso8601String(),
+        'end_at': DateTime(2026, 10, 21, 10).toIso8601String(),
+      });
+
+      expect(event.description, '');
+      expect(event.location, '');
+      expect(event.category, 'Personal');
+    });
   });
 }
