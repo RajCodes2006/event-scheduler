@@ -36,7 +36,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final errorMessage = context.select<EventController, String?>(
       (controller) => controller.errorMessage,
     );
-    final controller = context.read<EventController>();
     final scheme = Theme.of(context).colorScheme;
     final selectedDayKey = DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day);
     final selectedEvents = eventsByDay[selectedDayKey] ?? const <ScheduleEvent>[];
