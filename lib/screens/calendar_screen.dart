@@ -31,10 +31,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
       (controller) => controller.eventsByDay,
     );
     final isLoading = context.select<EventController, bool>(
-      (controller) => isLoading,
+      (controller) => controller.isLoading,
     );
     final errorMessage = context.select<EventController, String?>(
-      (controller) => errorMessage,
+      (controller) => controller.errorMessage,
     );
     final scheme = Theme.of(context).colorScheme;
     final selectedDayKey = DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day);
