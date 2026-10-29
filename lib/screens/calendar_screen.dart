@@ -27,9 +27,18 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<EventController>();
+    final eventsByDay = context.select<EventController, Map<DateTime, List<ScheduleEvent>>>(
+      (controller) => controller.eventsByDay,
+    );
+    final isLoading = context.select<EventController, bool>(
+      (controller) => controller.isLoading,
+    );
+    final errorMessage = context.select<EventController, String?>(
+      (controller) => controller.errorMessage,
+    );
     final scheme = Theme.of(context).colorScheme;
-    final selectedEvents = controller.eventsForDay(_selectedDay);
+    final selectedDayKey = DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day);
+    final selectedEvents = eventsByDay[selectedDayKey] ?? const <ScheduleEvent>[];
 
     return SafeArea(
       child: CustomScrollView(
@@ -65,7 +74,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     lastDay: DateTime(2050, 12, 31),
                     focusedDay: _focusedDay,
                     selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                    eventLoader: controller.eventsForDay,
+                    eventLoader: (day) => eventsByDay[DateTime(day.year, day.month, day.day)] ?? const <ScheduleEvent>[],
                     startingDayOfWeek: StartingDayOfWeek.monday,
                     calendarFormat: CalendarFormat.month,
                     availableGestures: AvailableGestures.horizontalSwipe,
@@ -129,7 +138,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ]),
             ),
           ),
-          if (controller.isLoading)
+          if (isLoading)
             const SliverToBoxAdapter(
               child: Center(
                 child: Padding(
@@ -138,12 +147,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
               ),
             )
-          else if (controller.errorMessage != null)
+          else if (errorMessage != null)
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               sliver: SliverToBoxAdapter(
                 child: _EmptyDayPanel(
-                  message: controller.errorMessage!,
+                  message: errorMessage!,
                   icon: Icons.error_outline_rounded,
                 ),
               ),

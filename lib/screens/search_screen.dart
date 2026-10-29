@@ -32,13 +32,21 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<EventController>();
+    final events = context.select<EventController, List<ScheduleEvent>>(
+      (controller) => controller.events,
+    );
+    final isLoading = context.select<EventController, bool>(
+      (controller) => controller.isLoading,
+    );
+    final errorMessage = context.select<EventController, String?>(
+      (controller) => controller.errorMessage,
+    );
     final scheme = Theme.of(context).colorScheme;
     final now = DateTime.now();
     final query = _searchController.text.trim().toLowerCase();
     final today = DateTime(now.year, now.month, now.day);
 
-    final filtered = controller.events.where((event) {
+    final filtered = events.where((event) {
       final matchesQuery = query.isEmpty ||
           event.title.toLowerCase().contains(query) ||
           event.description.toLowerCase().contains(query) ||
@@ -160,7 +168,7 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
           ),
-          if (controller.isLoading)
+          if (isLoading)
             const SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.all(24),

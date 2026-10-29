@@ -18,7 +18,19 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<EventController>();
+    final events = context.select<EventController, List<ScheduleEvent>>(
+      (controller) => controller.events,
+    );
+    final isLoading = context.select<EventController, bool>(
+      (controller) => controller.isLoading,
+    );
+    final errorMessage = context.select<EventController, String?>(
+      (controller) => controller.errorMessage,
+    );
+    final isDarkMode = context.select<EventController, bool>(
+      (controller) => controller.isDarkMode,
+    );
+    final controller = context.read<EventController>();
     final scheme = Theme.of(context).colorScheme;
     final todayEvents = controller.eventsForDay(DateTime.now());
     final upcomingEvents = controller.upcomingEvents;
@@ -141,7 +153,7 @@ class HomeScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              controller.events.isEmpty
+                              events.isEmpty
                                   ? 'Start small. Add what matters to you.'
                                   : '${upcomingEvents.length} upcoming event${upcomingEvents.length == 1 ? '' : 's'} on your schedule.',
                               style: const TextStyle(
