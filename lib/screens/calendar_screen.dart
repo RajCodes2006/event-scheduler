@@ -27,8 +27,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final events = context.select<EventController, List<ScheduleEvent>>(
-      (controller) => controller.events,
+    final eventsByDay = context.select<EventController, Map<DateTime, List<ScheduleEvent>>>(
+      (controller) => controller.eventsByDay,
     );
     final isLoading = context.select<EventController, bool>(
       (controller) => controller.isLoading,
@@ -38,7 +38,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
     final controller = context.read<EventController>();
     final scheme = Theme.of(context).colorScheme;
-    final selectedEvents = controller.eventsForDay(_selectedDay);
+    final selectedDayKey = DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day);
+    final selectedEvents = eventsByDay[selectedDayKey] ?? const <ScheduleEvent>[];
 
     return SafeArea(
       child: CustomScrollView(
@@ -74,7 +75,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     lastDay: DateTime(2050, 12, 31),
                     focusedDay: _focusedDay,
                     selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-                    eventLoader: controller.eventsForDay,
+                    eventLoader: (day) => eventsByDay[DateTime(day.year, day.month, day.day)] ?? const <ScheduleEvent>[],
                     startingDayOfWeek: StartingDayOfWeek.monday,
                     calendarFormat: CalendarFormat.month,
                     availableGestures: AvailableGestures.horizontalSwipe,
