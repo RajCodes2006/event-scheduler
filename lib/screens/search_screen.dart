@@ -36,10 +36,10 @@ class _SearchScreenState extends State<SearchScreen> {
       (controller) => controller.events,
     );
     final isLoading = context.select<EventController, bool>(
-      (controller) => isLoading,
+      (controller) => controller.isLoading,
     );
     final errorMessage = context.select<EventController, String?>(
-      (controller) => errorMessage,
+      (controller) => controller.errorMessage,
     );
     final scheme = Theme.of(context).colorScheme;
     final now = DateTime.now();
