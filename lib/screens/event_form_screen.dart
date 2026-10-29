@@ -61,7 +61,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
   int _wordCount(String value) {
     final trimmed = value.trim();
     if (trimmed.isEmpty) return 0;
-    return trimmed.split(RegExp(r'\\s+')).length;
+    return trimmed.split(RegExp(r'\s+')).length;
   }
 
   String? _validateTitle(String? value) {
