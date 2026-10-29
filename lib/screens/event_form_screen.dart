@@ -58,6 +58,28 @@ class _EventFormScreenState extends State<EventFormScreen> {
     super.dispose();
   }
 
+  int _wordCount(String value) {
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return 0;
+    return trimmed.split(RegExp(r'\\s+')).length;
+  }
+
+  String? _validateTitle(String? value) {
+    final title = value?.trim() ?? '';
+    if (title.isEmpty) return 'Add a title for your event.';
+    if (title.length < 8) return 'Title must be at least 8 characters.';
+    return null;
+  }
+
+  String? _validateOptionalWords(String? value, String fieldName) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return null;
+    if (_wordCount(text) < 8) {
+      return '$fieldName must contain at least 8 words.';
+    }
+    return null;
+  }
+
   DateTime _defaultRepeatUntil() {
     final spanDays = switch (_recurrenceFrequency) {
       'weekly' => 90,
@@ -260,7 +282,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
                 autofocus: !isEditing,
                 textCapitalization: TextCapitalization.sentences,
                 decoration: const InputDecoration(labelText: 'Event title', hintText: 'e.g. Project meeting'),
-                validator: (value) => value == null || value.trim().isEmpty ? 'Add a title for your event.' : null,
+                validator: _validateTitle,
               ),
               const SizedBox(height: 14),
               DropdownButtonFormField<String>(
@@ -273,7 +295,8 @@ class _EventFormScreenState extends State<EventFormScreen> {
               TextFormField(
                 controller: _locationController,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(labelText: 'Location (optional)', prefixIcon: Icon(Icons.place_outlined)),
+                decoration: const InputDecoration(labelText: 'Location (optional)', prefixIcon: Icon(Icons.place_outlined), helperText: 'If provided, enter at least 8 words.'),
+                validator: (value) => _validateOptionalWords(value, 'Location'),
               ),
               const SizedBox(height: 14),
               TextFormField(
@@ -281,7 +304,8 @@ class _EventFormScreenState extends State<EventFormScreen> {
                 textCapitalization: TextCapitalization.sentences,
                 minLines: 3,
                 maxLines: 5,
-                decoration: const InputDecoration(labelText: 'Notes (optional)', alignLabelWithHint: true, hintText: 'Anything you need to remember…'),
+                decoration: const InputDecoration(labelText: 'Notes (optional)', alignLabelWithHint: true, hintText: 'Anything you need to remember…', helperText: 'If provided, enter at least 8 words.'),
+                validator: (value) => _validateOptionalWords(value, 'Notes'),
               ),
               const SizedBox(height: 28),
               _FormSectionLabel(label: 'DATE & TIME'),
