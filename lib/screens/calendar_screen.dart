@@ -31,10 +31,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
       (controller) => controller.eventsByDay,
     );
     final isLoading = context.select<EventController, bool>(
-      (controller) => controller.isLoading,
+      (controller) => isLoading,
     );
     final errorMessage = context.select<EventController, String?>(
-      (controller) => controller.errorMessage,
+      (controller) => errorMessage,
     );
     final scheme = Theme.of(context).colorScheme;
     final selectedDayKey = DateTime(_selectedDay.year, _selectedDay.month, _selectedDay.day);
@@ -138,7 +138,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ]),
             ),
           ),
-          if (controller.isLoading)
+          if (isLoading)
             const SliverToBoxAdapter(
               child: Center(
                 child: Padding(
@@ -147,12 +147,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 ),
               ),
             )
-          else if (controller.errorMessage != null)
+          else if (errorMessage != null)
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               sliver: SliverToBoxAdapter(
                 child: _EmptyDayPanel(
-                  message: controller.errorMessage!,
+                  message: errorMessage!,
                   icon: Icons.error_outline_rounded,
                 ),
               ),
