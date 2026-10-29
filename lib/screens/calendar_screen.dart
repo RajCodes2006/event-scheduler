@@ -27,7 +27,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<EventController>();
+    final events = context.select<EventController, List<ScheduleEvent>>(
+      (controller) => controller.events,
+    );
+    final isLoading = context.select<EventController, bool>(
+      (controller) => controller.isLoading,
+    );
+    final errorMessage = context.select<EventController, String?>(
+      (controller) => controller.errorMessage,
+    );
+    final controller = context.read<EventController>();
     final scheme = Theme.of(context).colorScheme;
     final selectedEvents = controller.eventsForDay(_selectedDay);
 
