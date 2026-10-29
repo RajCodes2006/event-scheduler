@@ -29,11 +29,13 @@ class EventSchedulerApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final controller = context.watch<EventController>();
+    final isDarkMode = context.select<EventController, bool>(
+      (controller) => controller.isDarkMode,
+    );
     return MaterialApp(
       title: 'Daymark',
       debugShowCheckedModeBanner: false,
-      themeMode: controller.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      themeMode: isDarkMode ? ThemeMode.dark : ThemeMode.light,
       theme: _buildTheme(Brightness.light),
       darkTheme: _buildTheme(Brightness.dark),
       home: const AppShell(),
