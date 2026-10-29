@@ -14,6 +14,7 @@ class EventController extends ChangeNotifier {
   String? _errorMessage;
 
   List<ScheduleEvent> get events => _events;
+  Map<DateTime, List<ScheduleEvent>> get eventsByDay => _eventsByDay;
   bool get isLoading => _isLoading;
   bool get isDarkMode => _isDarkMode;
   String? get errorMessage => _errorMessage;
