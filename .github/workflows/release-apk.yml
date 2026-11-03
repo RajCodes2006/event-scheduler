@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Release version (must be a new tag, e.g. v1.0.5)"
+        description: "Release version (must match pubspec.yaml and be a new tag, e.g. v1.0.6)"
         required: true
         type: string
-        default: "v1.0.5"
+        default: "v1.0.6"
 
 permissions:
   contents: read
@@ -129,6 +129,37 @@ jobs:
     permissions:
       contents: write
     steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate version and ensure tag is unused
+        shell: bash
+        env:
+          REQUESTED_TAG: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          package_version="$(sed -nE 's/^version: ([0-9]+\.[0-9]+\.[0-9]+)\+[0-9]+$/\1/p' pubspec.yaml)"
+          expected_tag="v${package_version}"
+
+          if [[ -z "$package_version" ]]; then
+            echo "Could not read a valid version from pubspec.yaml."
+            exit 1
+          fi
+
+          if [[ "$REQUESTED_TAG" != "$expected_tag" ]]; then
+            echo "Requested tag $REQUESTED_TAG does not match package version $expected_tag."
+            exit 1
+          fi
+
+          if [[ -n "$(git ls-remote --tags origin "refs/tags/$REQUESTED_TAG")" ]]; then
+            echo "Tag $REQUESTED_TAG already exists. Choose a new version."
+            exit 1
+          fi
+
+          echo "Validated new release tag: $REQUESTED_TAG"
+
       - name: Download Android APK
         uses: actions/download-artifact@v4
         with:
