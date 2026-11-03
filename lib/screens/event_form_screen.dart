@@ -61,8 +61,11 @@ class _EventFormScreenState extends State<EventFormScreen> {
   String? _validateTitle(String? value) {
     final title = value?.trim() ?? '';
     if (title.isEmpty) return 'Add a title for your event.';
+    if (title.runes.length < 5) {
+      return 'Event title must be at least 5 characters long.';
+    }
     if (!RegExp(r'\p{L}', unicode: true).hasMatch(title)) {
-      return 'Enter a meaningful title containing at least one letter.';
+      return 'Include at least one letter in your event title.';
     }
     return null;
   }
@@ -268,7 +271,11 @@ class _EventFormScreenState extends State<EventFormScreen> {
                 controller: _titleController,
                 autofocus: !isEditing,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(labelText: 'Event title', hintText: 'e.g. Project meeting'),
+                decoration: const InputDecoration(
+                  labelText: 'Event title',
+                  hintText: 'e.g. Project meeting',
+                  helperText: 'At least 5 characters',
+                ),
                 validator: _validateTitle,
               ),
               const SizedBox(height: 14),
