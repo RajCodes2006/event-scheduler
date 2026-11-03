@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Release version (use a new tag, e.g. v1.0.3)"
+        description: "Release version (must be a new tag, e.g. v1.0.5)"
         required: true
         type: string
-        default: "v1.0.4"
+        default: "v1.0.5"
 
 permissions:
   contents: read
@@ -28,6 +28,9 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Analyze Dart code
+        run: flutter analyze
 
       - name: Run unit tests
         run: flutter test
