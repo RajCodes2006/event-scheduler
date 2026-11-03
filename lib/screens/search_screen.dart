@@ -38,9 +38,6 @@ class _SearchScreenState extends State<SearchScreen> {
     final isLoading = context.select<EventController, bool>(
       (controller) => controller.isLoading,
     );
-    final errorMessage = context.select<EventController, String?>(
-      (controller) => controller.errorMessage,
-    );
     final scheme = Theme.of(context).colorScheme;
     final now = DateTime.now();
     final query = _searchController.text.trim().toLowerCase();
