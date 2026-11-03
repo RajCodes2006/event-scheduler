@@ -22,13 +22,13 @@ class HomeScreen extends StatelessWidget {
       (controller) => controller.events,
     );
     final isLoading = context.select<EventController, bool>(
-      (controller) => isLoading,
+      (controller) => controller.isLoading,
     );
     final errorMessage = context.select<EventController, String?>(
-      (controller) => errorMessage,
+      (controller) => controller.errorMessage,
     );
     final isDarkMode = context.select<EventController, bool>(
-      (controller) => isDarkMode,
+      (controller) => controller.isDarkMode,
     );
     final controller = context.read<EventController>();
     final scheme = Theme.of(context).colorScheme;
