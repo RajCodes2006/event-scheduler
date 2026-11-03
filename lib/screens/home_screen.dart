@@ -22,13 +22,13 @@ class HomeScreen extends StatelessWidget {
       (controller) => controller.events,
     );
     final isLoading = context.select<EventController, bool>(
-      (controller) => controller.isLoading,
+      (controller) => isLoading,
     );
     final errorMessage = context.select<EventController, String?>(
-      (controller) => controller.errorMessage,
+      (controller) => errorMessage,
     );
     final isDarkMode = context.select<EventController, bool>(
-      (controller) => controller.isDarkMode,
+      (controller) => isDarkMode,
     );
     final controller = context.read<EventController>();
     final scheme = Theme.of(context).colorScheme;
@@ -88,9 +88,9 @@ class HomeScreen extends StatelessWidget {
                         side: BorderSide(color: scheme.outlineVariant),
                       ),
                       child: IconButton(
-                        tooltip: controller.isDarkMode ? 'Switch to light mode' : 'Switch to dark mode',
+                        tooltip: isDarkMode ? 'Switch to light mode' : 'Switch to dark mode',
                         onPressed: controller.toggleDarkMode,
-                        icon: Icon(controller.isDarkMode
+                        icon: Icon(isDarkMode
                             ? Icons.light_mode_rounded
                             : Icons.dark_mode_rounded),
                         color: scheme.primary,
@@ -105,14 +105,14 @@ class HomeScreen extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: controller.isDarkMode
+                      colors: isDarkMode
                           ? const [Color(0xFF302C67), Color(0xFF1D2548)]
                           : const [Color(0xFF302D70), Color(0xFF5B54D9)],
                     ),
                     borderRadius: BorderRadius.circular(28),
                     boxShadow: [
                       BoxShadow(
-                        color: scheme.primary.withValues(alpha: controller.isDarkMode ? 0.10 : 0.18),
+                        color: scheme.primary.withValues(alpha: isDarkMode ? 0.10 : 0.18),
                         blurRadius: 28,
                         offset: const Offset(0, 12),
                       ),
@@ -210,19 +210,19 @@ class HomeScreen extends StatelessWidget {
               ]),
             ),
           ),
-          if (controller.isLoading)
+          if (isLoading)
             const SliverToBoxAdapter(
               child: Center(child: Padding(
                 padding: EdgeInsets.all(20),
                 child: CircularProgressIndicator(),
               )),
             )
-          else if (controller.errorMessage != null)
+          else if (errorMessage != null)
             SliverPadding(
               padding: const EdgeInsets.symmetric(horizontal: 22),
               sliver: SliverToBoxAdapter(
                 child: _MessagePanel(
-                  message: controller.errorMessage!,
+                  message: errorMessage!,
                   icon: Icons.error_outline_rounded,
                 ),
               ),
@@ -272,7 +272,7 @@ class HomeScreen extends StatelessWidget {
               ]),
             ),
           ),
-          if (!controller.isLoading && visibleUpcomingEvents.isEmpty)
+          if (!isLoading && visibleUpcomingEvents.isEmpty)
             const SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: 22),
               sliver: SliverToBoxAdapter(
