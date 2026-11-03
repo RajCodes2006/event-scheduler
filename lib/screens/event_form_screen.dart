@@ -61,10 +61,7 @@ class _EventFormScreenState extends State<EventFormScreen> {
   String? _validateTitle(String? value) {
     final title = value?.trim() ?? '';
     if (title.isEmpty) return 'Add a title for your event.';
-    if (!title.runes.any((rune) {
-      final character = String.fromCharCode(rune);
-      return character.toLowerCase() != character.toUpperCase();
-    })) {
+    if (!RegExp(r'\\p{L}', unicode: true).hasMatch(title)) {
       return 'Enter a meaningful title containing at least one letter.';
     }
     return null;
